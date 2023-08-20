@@ -83,7 +83,7 @@ flag = 1
 feasible_point_new = solver.solve()
 count = 0   #统计可行点数量
 while(flag == 1):
-    if feasible_point_new[0] == False:  #循环终止条件
+    if feasible_point_new[0] == False:  
         flag = 0
         break
     clause_new = [0] * 11  # 11维的点，对应的新的约束也是11维的
@@ -100,58 +100,5 @@ while(flag == 1):
     feasible_point_new = solver.solve()
     print(feasible_point_new)
 print(count)
-# solver.add_clause([1, 2, -3, 4, -5, 6, 7, 8, 9, -10, 11])   #去除求解出的第一个可行解
-# solver.solve()
-# print(solver.solve())
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
