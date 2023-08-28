@@ -1,9 +1,0 @@
-window下的编译和执行命令：
-
-编译：注意链接MPI库和头文件 
-g++ SIMON3264_Quadruple_MPI_RNG.cpp SIMON3264.cpp --std=c++11 -Wall -O3 -o SIMON32_9r -l msmpi -L "D:\Microsoft SDKs\MPI\Lib\x64" -I "D:\Microsoft SDKs\MPI\Include"
-
-在8线程下执行：
-mpiexec -n 8 SIMON32_9r
-
-一个MPI教程链接 https://mpitutorial.com/tutorials/ 先解决手头的问题，有时间再详细学习
