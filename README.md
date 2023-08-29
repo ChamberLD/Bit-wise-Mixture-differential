@@ -49,7 +49,7 @@ output:
  63 proc:     Right = 2^(-inf)
  63 proc: randRight = 2^(-inf)
 
-                              Total queries = 2^(38.000000) 
+ Total queries = 2^(38.000000) 
 SIMON32:     Number of total right quadruples = 2^(7.199672)
            Probability of right quadruples  = 2^(-30.8003)
  RandPerm: Number of total right quadruples = 2^(-inf)
