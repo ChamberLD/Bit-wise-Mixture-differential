@@ -17,3 +17,5 @@ To run our codes preinstallation is SAT for solving constraint programming probl
 
 ## verify
 In folder verify, we verified the obtained mixture differential trails under multip keys.
+
+To run distinguisher verification code, preinstallation is MPI. 
