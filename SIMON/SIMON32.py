@@ -1,6 +1,6 @@
 """
 Function: Model SIMON algorithm and find Mixture differential distinguishers   /////Supplementary experiments for SIMON32-64
-Date: 2022/07/14
+Date: 2023/07/14
 Author: Zehan Wu
 Contact:
 """
