@@ -1,6 +1,6 @@
 """
 Function: MDDT generation for & operation
-Date: 2022/02/25
+Date: 2023/02/25
 Author: Zehan Wu
 Contact:
 """
