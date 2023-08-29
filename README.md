@@ -10,7 +10,7 @@ By adjusting the function's parameter 1 and parameter 2 it is possible to find m
 
 `pycryptosat.Solver(threads=1)` //adjusting the number of CPU cores used
 
-To run our codes preinstallation is SAT for solving constraint programming problems. You can run the code in the background on a linux system using the following command
+To run our codes preinstallation is SAT for solving constraint programming problems. You can run the code in the background on a linux system using the following command:
 
 `nohup python SIMONXXX.py &`
 
