@@ -14,6 +14,35 @@ To run our codes preinstallation is SAT for solving constraint programming probl
 
 `nohup python SIMONXXX.py &`
 
+output:
+```
+L_1r_0_c2:  False  L_1r_0_c1:  False  L_1r_0_c0:  False
+R_1r_0_c2:  False  R_1r_0_c1:  False  R_1r_0_c0:  False
+######################    AND运算   ########################
+SR1_1r_0_c2:  True  SR1_1r_0_c1:  False  SR1_1r_0_c0:  True
+SR8_1r_0_c2:  False  SR8_1r_0_c1:  False  SR8_1r_0_c0:  False
+aftAnd_1r_0_c2:  False  aftAnd_1r_0_c1:  False  aftAnd_1r_0_c0:  False
+ProaftAnd_1r_0_ph:  False  ProaftAnd_1r_0_pl:  True
+...
+...
+L_23r_17_c2:  False  L_23r_17_c1:  True  L_23r_17_c0:  True
+L_23r_18_c2:  False  L_23r_18_c1:  False  L_23r_18_c0:  False
+L_23r_19_c2:  False  L_23r_19_c1:  False  L_23r_19_c0:  False
+L_23r_20_c2:  False  L_23r_20_c1:  False  L_23r_20_c0:  False
+L_23r_21_c2:  False  L_23r_21_c1:  True  L_23r_21_c0:  True
+L_23r_22_c2:  False  L_23r_22_c1:  False  L_23r_22_c0:  False
+L_23r_23_c2:  False  L_23r_23_c1:  False  L_23r_23_c0:  False
+L_23r_24_c2:  False  L_23r_24_c1:  False  L_23r_24_c0:  False
+L_23r_25_c2:  False  L_23r_25_c1:  False  L_23r_25_c0:  False
+L_23r_26_c2:  False  L_23r_26_c1:  False  L_23r_26_c0:  False
+L_23r_27_c2:  False  L_23r_27_c1:  False  L_23r_27_c0:  False
+L_23r_28_c2:  False  L_23r_28_c1:  False  L_23r_28_c0:  False
+L_23r_29_c2:  False  L_23r_29_c1:  False  L_23r_29_c0:  False
+L_23r_30_c2:  False  L_23r_30_c1:  False  L_23r_30_c0:  False
+L_23r_31_c2:  False  L_23r_31_c1:  False  L_23r_31_c0:  False
+142
+```
+
 
 ## verify
 In folder verify, we verified the obtained mixture differential trails under multip keys.
