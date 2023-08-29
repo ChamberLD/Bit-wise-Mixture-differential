@@ -18,7 +18,7 @@ To run our codes preinstallation is SAT for solving constraint programming probl
 ## verify
 In folder verify, we verified the obtained mixture differential trails under multip keys.
 
-To run distinguisher verification code, preinstallation is MPI. To test the mixture differential trails on 9-rounds SIMON32, firstly compile:
+To run distinguisher verification code, preinstallation is MPI. To test the 9-round mixture differential trails on SIMON32, firstly compile:
 
 `mpicxx SIMON3264_Quadruple_MPI_RNG.cpp SIMON3264.cpp --std=c++11 -Wall -O3 -o SIMON32_9r`
 
