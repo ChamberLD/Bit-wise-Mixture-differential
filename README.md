@@ -4,7 +4,7 @@ All code used in paper "Bit-wise Mixture Differential Cryptanalysis and Its Appl
 ## SIMON
 The SIMON folder contains the code for the automated search of SIMON's Mixture Differential Distinguisher for 5 versions.
 
-By adjusting the function's parameter 1 and parameter 2 it is possible to find mixture differential distinguisher trails with probability less than or equal to parameter 2 for different numbers of rounds.
+By adjusting the function's parameter 1 and parameter 2 it is possible to find mixture differential trails with probability less than or equal to parameter 2 for different numbers of rounds.
 
 `gen_objectfuntion_Constraint(9, 34)` //round， probability
 
@@ -16,4 +16,4 @@ To run our codes preinstallation is SAT for solving constraint programming probl
 
 
 ## verify
-in this folder,
+In folder verify, we verified the obtained mixture differential trails under multip keys.
