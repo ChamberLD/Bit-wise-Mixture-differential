@@ -1,6 +1,6 @@
 """
 Function: Verify whether the CNF matches the feasible point set
-Date: 2022/03/04
+Date: 2023/03/04
 Arthor: Zehan Wu
 Contact:
 """
