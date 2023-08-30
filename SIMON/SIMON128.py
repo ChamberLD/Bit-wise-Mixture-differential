@@ -364,7 +364,6 @@ start_time = process_time()
 
 number = 1
 p_number = 1
-#定义求解器
 solver = pycryptosat.Solver(threads=32)
 #主循环,这里的循环次数是想要找的混合差分区分器的轮数
 for i in range(1, 33):
