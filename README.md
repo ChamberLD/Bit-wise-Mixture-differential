@@ -87,4 +87,4 @@ SIMON32:     Number of total right quadruples = 2^(7.199672)
  ```
 
 ## attachment
-The folder contains some specific CNF constraints used in the model, all feasible mixture differential propagation patterns in the MDDT table, mixture differential propagation patterns with dependencies.
+The folder contains some specific CNF constraints used in the model, all feasible mixture differential propagation patterns in the MDDT table, mixture differential propagation patterns with dependencies and the full mixture differential trails found using the model.
