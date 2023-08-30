@@ -53,7 +53,7 @@ To run distinguisher verification code, preinstallation is MPI. To test the 9-ro
 
 then run:
 
-`mpirun -np 8 ./SIMON32_9r`
+`mpirun -np 64 ./SIMON32_9r` //64:cpu cores
 
 output:
  ```
