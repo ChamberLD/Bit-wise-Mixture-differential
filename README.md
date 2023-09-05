@@ -91,6 +91,6 @@ SIMON32:     Number of total right quadruples = 2^(7.199672)
 ## attachment
 The folder contains some specific CNF constraints used in the model, all feasible mixture differential propagation patterns in the MDDT table, mixture differential propagation patterns with dependencies and the full mixture differential trails found using the model.
 
-`Feasible_point_And.csv`:Feasible mixture differential propagation pattern propagated by AND operation
-`Feasible_point_XOR.csv`:Feasible mixture differential propagation pattern propagated by XOR operation
-`dependent_And.csv`:Feasible mixture differential propagation pattern considering dependence propagated by AND operation
+`Feasible_point_And.csv`: Feasible mixture differential propagation pattern propagated by AND operation
+`Feasible_point_XOR.csv`: Feasible mixture differential propagation pattern propagated by XOR operation
+`dependent_And.csv`: Feasible mixture differential propagation pattern considering dependence propagated by AND operation
