@@ -6,7 +6,9 @@ The SIMON folder contains the code for the automated search of SIMON's Mixture D
 
 By adjusting the function's parameter 1 and parameter 2 it is possible to find mixture differential trails with probability less than or equal to parameter 2 for different numbers of rounds.
 
-`gen_objectfuntion_Constraint(9, 34)` //round， probability
+`gen_objectfuntion_Constraint(9, 34)` //round， probability:2ph+pl
+
+`gen_objectfuntion2_Constraint(9, 0)` //round， probability:pdep
 
 `pycryptosat.Solver(threads=1)` //adjusting the number of CPU cores used
 
@@ -88,3 +90,5 @@ SIMON32:     Number of total right quadruples = 2^(7.199672)
 
 ## attachment
 The folder contains some specific CNF constraints used in the model, all feasible mixture differential propagation patterns in the MDDT table, mixture differential propagation patterns with dependencies and the full mixture differential trails found using the model.
+
+`Feasible_point_And.csv`:
