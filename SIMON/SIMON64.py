@@ -1,56 +1,56 @@
 """
-Function: find mixture differential trails closure for SIMON
-Date: 2022/04/24
+Function: Model SIMON algorithm and find Mixture differential distinguishers
+Date: 2022/03/06
 Author: Zehan Wu
 Contact:
 """
-import sys
-import numpy as np
-import pandas as pd
+
 import pycryptosat
 import time
 from time import process_time
+
 
 ##############################################################################################
 #定义SIMON算法模型中的变量，一共应该有7个状态，因此应该定义7个状态的bit的混合差分变量模式，还需要带上轮数
 ##############################################################################################
 #每一轮的输入bit的混合差分模式,分为左侧输入和右侧输入
 def genVars_Round(r):
-    return ['L_'+str(r)+'r_'+str(i) for i in range(16)] + ['R_'+str(r)+'r_'+str(i) for i in range(16)]
+    return ['L_'+str(r)+'r_'+str(i) for i in range(32)] + ['R_'+str(r)+'r_'+str(i) for i in range(32)]
 
 #每一轮的左移1位的bit的混合差分模式
 def genVars_SR1_Round(r):
-    return ['SR1_'+str(r)+'r_'+str(i) for i in range(16)]
+    return ['SR1_'+str(r)+'r_'+str(i) for i in range(32)]
 
 #每一轮的左移2位的bit的混合差分模式
 def genVars_SR2_Round(r):
-    return ['SR2_'+str(r)+'r_'+str(i) for i in range(16)]
+    return ['SR2_'+str(r)+'r_'+str(i) for i in range(32)]
 
 #每一轮的左移8位的bit的混合差分模式
 def genVars_SR8_Round(r):
-    return ['SR8_'+str(r)+'r_'+str(i) for i in range(16)]
+    return ['SR8_'+str(r)+'r_'+str(i) for i in range(32)]
 
 #每一轮的＆运算之后的bit的混合差分模式
 def genVars_aftAnd_Round(r):
-    return ['aftAnd_'+str(r)+'r_'+str(i) for i in range(16)]
+    return ['aftAnd_'+str(r)+'r_'+str(i) for i in range(32)]
 
 #每一轮的第一次异或后的bit的混合差分模式
 def genVars_aftXOR1_Round(r):
-    return ['aftXOR1_'+str(r)+'r_'+str(i) for i in range(16)]
+    return ['aftXOR1_'+str(r)+'r_'+str(i) for i in range(32)]
 
 #每一轮的and操作后的混合差分概率变量
 def genVars_ProaftAnd_Round(r):
-    return ['ProaftAnd_'+str(r)+'r_'+str(i) for i in range(16)]
+    return ['ProaftAnd_'+str(r)+'r_'+str(i) for i in range(32)]
 
 #生成每一轮需要的copy变量，copy变量在传递约束方面是很有用的
 def genVars_Copy_Round(r, k):
-    return ['Copy_'+str(k)+'_'+str(r)+'r_'+str(i) for i in range(16)]
+    return ['Copy_'+str(k)+'_'+str(r)+'r_'+str(i) for i in range(32)]
 
 #生成每一轮需要的概率变量ph的copy变量
 def genVars_PCopy_Round():
     #用p_number来表示概率变量的下标
     global  p_number
-    return ['PCopy_'+str(i) for i in range(p_number, p_number+16)]
+    return ['PCopy_'+str(i) for i in range(p_number, p_number+32)]
+
 
 ####################################################################################
 ####################################################################################
@@ -209,7 +209,6 @@ def plcopy(a, b):
         dict[b[i]] = dict[a[i] + str("_pl")]
 
 
-
 #定义bit的循环左移,将相应的bit的混合差分模式赋给循环左移后的bit,k表示循环左移位数，其实主要的功能是让不同的变量名在SAT中指向同一变量，这样约束就不会混乱
 def shift_left(a, b, k):
     if k == 1:
@@ -237,9 +236,9 @@ def insert_dict(a):
         dict[a[i] + str("_c0")] = number; number = number + 1
 
 
+
 #生成目标函数的约束
 def gen_objectfuntion_Constraint(r, w):
-    #r为轮次数, w为目标函数上界
     global number
     n = r*32*3
     dict["S_1_1"] = number; number = number + 1
@@ -267,7 +266,6 @@ def gen_objectfunction2_Constraint(r, c, vars_num):
                 list.append(dict['ProaftAnd_'+str(i)+'r_'+str(j) + str("_Pdep")])
         cnf = CardEnc.atleast(lits=list, bound=c, top_id=vars_num, encoding=1)
         solver.add_clauses(cnf.clauses)
-
 
 
 #添加SIMON算法and运算的差分因为移位产生的约束（差分依赖性约束）
@@ -359,6 +357,7 @@ def gen_rotation_Constraint(a, c, d):
                     constraint_real.append(eval(constraint[k]))
                 solver.add_clause(constraint_real)
 
+
 #定义一个简单的两个比特变量机型异或运算时候的函数(主要是用于约束输入混合差分模式的约束）
 def gen_XORCNF_input(a, b):
     global number
@@ -404,11 +403,15 @@ def gen_XORCNF_input(a, b):
 
 
 
-solver = pycryptosat.Solver(threads=1)
+start_time = process_time()
+
+
 number = 1
 p_number = 1
+#定义求解器
+solver = pycryptosat.Solver(threads=64)
 #主循环,这里的循环次数是想要找的混合差分区分器的轮数
-for i in range(1, 24):
+for i in range(1, 23):
     Lin = genVars_Round(i)[0:32]
     Rin = genVars_Round(i)[32:64]
     SR1 = genVars_SR1_Round(i)
@@ -417,11 +420,10 @@ for i in range(1, 24):
     aft_And = genVars_aftAnd_Round(i)
     Pro_aftAnd = genVars_ProaftAnd_Round(i)
     aft_XOR = genVars_aftXOR1_Round(i)
-
     #生成Pcopy变量,用于后续添加目标函数约束，Pcopy1和Pcopy2是ph的复制变量，Pcopy3是pl的复制变量
     PCopy1 = genVars_PCopy_Round()
     for k in range(1, 33):
-        p_number = p_number + 1
+        p_number = p_number + 1         #为了下标正确，每次复制完之后，p_number需要增加32
     PCopy2 = genVars_PCopy_Round()
     for k in range(1, 33):
         p_number = p_number + 1
@@ -434,7 +436,6 @@ for i in range(1, 24):
         insert_dict(Rin)
     else:
         copy(genVars_Round(i - 1)[0:32], Rin)  # 这里实际上就是R(r)和Lin(r-1)实际上指向的是同一个变量，通过这样可以减少相应的变量数目
-
     #在进行And操作前，先进行移位操作
     shift_left(Lin, SR1, 1)
     shift_left(Lin, SR8, 8)
@@ -445,59 +446,60 @@ for i in range(1, 24):
     #添加每一个bit对应三元组的依赖混合差分的约束
     gen_rotation_Constraint(Lin,  aft_And, Pro_aftAnd)
 
+
     #生成概率变量ph的copy变量
     gen_PhCopyCNF_Constraint(Pro_aftAnd, PCopy1)
     phcopy(Pro_aftAnd, PCopy2)
-    #生成概率变量pl的copy变量
+    # 生成概率变量pl的copy变量
     plcopy(Pro_aftAnd, PCopy3)
     #生成每一轮每一个bit对应的第一次XOR约束
     gen_XORCNF_Constraint(aft_And, Rin, aft_XOR)
     #生成每一轮每一个bit对应的第二次XOR约束,用下一轮的Lin来作为XOR操作的输出
     gen_XORCNF_Constraint(aft_XOR, SR2, genVars_Round(i+1)[0:32])
 
-    # 添加输入混合差分模式的有关约束,先添加异或变量的有关约束，
+    #添加输入混合差分模式的有关约束,先添加异或变量的有关约束，
     if i == 1:
         gen_XORCNF_input(Lin, Rin)
 
 ####################################################
 ##最终目标函数2Ph+Pl-Pdep≤w-c   变向实现有负数的基数约束
 ####################################################
-gen_objectfuntion_Constraint(23, 146)
+gen_objectfuntion_Constraint(22, 130)
 vars_num = solver.nb_vars()
-gen_objectfunction2_Constraint(9, 0, vars_num)
+gen_objectfunction2_Constraint(23, 0, vars_num)
 
 
-#约束1，求和c^k_2>=1,k in [0,31],也就是L16+R16
+#约束1，求和c^k_2>=1,k in [0,63],也就是L32+R32
 for i in range(0, 32):
     constraint = []
     constraint.append(dict["L_1r_" + str(i) + "_c2"])
     constraint.append(dict["R_1r_" + str(i) + "_c2"])
 solver.add_clause(constraint)
-#约束2，求和c^k_1>=1,k in [0,31],也就是L16+R16
+#约束2，求和c^k_1>=1,k in [0,63],也就是L32+R32
 for i in range(0, 32):
     constraint = []
     constraint.append(dict["L_1r_" + str(i) + "_c1"])
     constraint.append(dict["R_1r_" + str(i) + "_c1"])
 solver.add_clause(constraint)
-#约束3，求和c^k_0>=1,k in [0,31],也就是L16+R16
+#约束3，求和c^k_0>=1,k in [0,63],也就是L32+R32
 for i in range(0, 32):
     constraint = []
     constraint.append(dict["L_1r_" + str(i) + "_c0"])
     constraint.append(dict["R_1r_" + str(i) + "_c0"])
 solver.add_clause(constraint)
-#约束4，求和e^k_2>=1,k in [0,31],也就是L16+R16
+#约束4，求和e^k_2>=1,k in [0,63],也就是L32+R32
 for i in range(0, 32):
     constraint = []
     constraint.append(dict["L_1r_" + str(i) + "_e2"])
     constraint.append(dict["R_1r_" + str(i) + "_e2"])
 solver.add_clause(constraint)
-#约束5，求和e^k_1>=1,k in [0,31],也就是L16+R16
+#约束5，求和e^k_1>=1,k in [0,63],也就是L32+R32
 for i in range(0, 32):
     constraint = []
     constraint.append(dict["L_1r_" + str(i) + "_e1"])
     constraint.append(dict["R_1r_" + str(i) + "_e1"])
 solver.add_clause(constraint)
-#约束6，求和e^k_0>=1,k in [0,31],也就是L16+R16
+#约束6，求和e^k_0>=1,k in [0,63],也就是L32+R32
 for i in range(0, 32):
     constraint = []
     constraint.append(dict["L_1r_" + str(i) + "_e0"])
@@ -505,106 +507,63 @@ for i in range(0, 32):
 solver.add_clause(constraint)
 
 
+##############################################################################################
+##############################################################################################
 Vars_number = solver.nb_vars()
 print(Vars_number)
 
-flag = True
-trail_count = 0
-run_times = 0
-while(flag):
-    sat, solution = solver.solve()
-    count = 0
-    #加一个判定条件，判断是否有解存在
-    if sat == False:
-        print("不存在差分路径")
-        flag = False
-    else:
-        #每次找到一组解,将他添加到SAT模型当中去
-        ban_solution = []
-        print("###############################solution########################################################")
-        for i in range(1, 24):
-            for j in range(0, 32):
-                if (solution[dict["ProaftAnd_" + str(i) + "r_" + str(j) + "_ph"]] == True):
-                    count = count + 2
-                elif (solution[dict["ProaftAnd_" + str(i) + "r_" + str(j) + "_pl"]] == True):
-                    count = count + 1
-        print(count)
-        #判断输出差分模式是否相同，如果输出差分模式相同，就加一，最后看一共有多少个,用上一轮的L来表示这一轮的R
-        if(solution[dict["L_10r_0_c2"]] == False and solution[dict["L_10r_0_c1"]] == False and solution[dict["L_10r_0_c0"]] == False and            #以下是输出差分模式
-           solution[dict["L_10r_1_c2"]] == True and solution[dict["L_10r_1_c1"]] == True and solution[dict["L_10r_1_c0"]] == False and
-           solution[dict["L_10r_2_c2"]] == False and solution[dict["L_10r_2_c1"]] == False and solution[dict["L_10r_2_c0"]] == False and
-           solution[dict["L_10r_3_c2"]] == False and solution[dict["L_10r_3_c1"]] == False and solution[dict["L_10r_3_c0"]] == False and
-           solution[dict["L_10r_4_c2"]] == False and solution[dict["L_10r_4_c1"]] == False and solution[dict["L_10r_4_c0"]] == False and
-           solution[dict["L_10r_5_c2"]] == False and solution[dict["L_10r_5_c1"]] == True and solution[dict["L_10r_5_c0"]] == True and
-           solution[dict["L_10r_6_c2"]] == False and solution[dict["L_10r_6_c1"]] == False and solution[dict["L_10r_6_c0"]] == False and
-           solution[dict["L_10r_7_c2"]] == False and solution[dict["L_10r_7_c1"]] == False and solution[dict["L_10r_7_c0"]] == False and
-           solution[dict["L_10r_8_c2"]] == False and solution[dict["L_10r_8_c1"]] == False and solution[dict["L_10r_8_c0"]] == False and
-           solution[dict["L_10r_9_c2"]] == False and solution[dict["L_10r_9_c1"]] == False and solution[dict["L_10r_9_c0"]] == False and
-           solution[dict["L_10r_10_c2"]] == False and solution[dict["L_10r_10_c1"]] == False and solution[dict["L_10r_10_c0"]] == False and
-           solution[dict["L_10r_11_c2"]] == False and solution[dict["L_10r_11_c1"]] == False and solution[dict["L_10r_11_c0"]] == False and
-           solution[dict["L_10r_12_c2"]] == False and solution[dict["L_10r_12_c1"]] == False and solution[dict["L_10r_12_c0"]] == False and
-           solution[dict["L_10r_13_c2"]] == False and solution[dict["L_10r_13_c1"]] == True and solution[dict["L_10r_13_c0"]] == True and
-           solution[dict["L_10r_14_c2"]] == False and solution[dict["L_10r_14_c1"]] == False and solution[dict["L_10r_14_c0"]] == False and
-           solution[dict["L_10r_15_c2"]] == False and solution[dict["L_10r_15_c1"]] == False and solution[dict["L_10r_15_c0"]] == False and
-           solution[dict["L_9r_0_c2"]] == False and solution[dict["L_9r_0_c1"]] == False and solution[dict["L_9r_0_c0"]] == False and
-           solution[dict["L_9r_1_c2"]] == False and solution[dict["L_9r_1_c1"]] == False and solution[dict["L_9r_1_c0"]] == False and
-           solution[dict["L_9r_2_c2"]] == False and solution[dict["L_9r_2_c1"]] == False and solution[dict["L_9r_2_c0"]] == False and
-           solution[dict["L_9r_3_c2"]] == True and solution[dict["L_9r_3_c1"]] == False and solution[dict["L_9r_3_c0"]] == True and
-           solution[dict["L_9r_4_c2"]] == False and solution[dict["L_9r_4_c1"]] == False and solution[dict["L_9r_4_c0"]] == False and
-           solution[dict["L_9r_5_c2"]] == False and solution[dict["L_9r_5_c1"]] == False and solution[dict["L_9r_5_c0"]] == False and
-           solution[dict["L_9r_6_c2"]] == False and solution[dict["L_9r_6_c1"]] == False and solution[dict["L_9r_6_c0"]] == False and
-           solution[dict["L_9r_7_c2"]] == True and solution[dict["L_9r_7_c1"]] == False and solution[dict["L_9r_7_c0"]] == True and
-           solution[dict["L_9r_8_c2"]] == False and solution[dict["L_9r_8_c1"]] == False and solution[dict["L_9r_8_c0"]] == False and
-           solution[dict["L_9r_9_c2"]] == False and solution[dict["L_9r_9_c1"]] == False and solution[dict["L_9r_9_c0"]] == False and
-           solution[dict["L_9r_10_c2"]] == False and solution[dict["L_9r_10_c1"]] == False and solution[dict["L_9r_10_c0"]] == False and
-           solution[dict["L_9r_11_c2"]] == False and solution[dict["L_9r_11_c1"]] == False and solution[dict["L_9r_11_c0"]] == False and
-           solution[dict["L_9r_12_c2"]] == False and solution[dict["L_9r_12_c1"]] == False and solution[dict["L_9r_12_c0"]] == False and
-           solution[dict["L_9r_13_c2"]] == False and solution[dict["L_9r_13_c1"]] == False and solution[dict["L_9r_13_c0"]] == False and
-           solution[dict["L_9r_14_c2"]] == False and solution[dict["L_9r_14_c1"]] == False and solution[dict["L_9r_14_c0"]] == False and
-           solution[dict["L_9r_15_c2"]] == False and solution[dict["L_9r_15_c1"]] == True and solution[dict["L_9r_15_c0"]] == True and
-           solution[dict["L_1r_0_c2"]] == False and solution[dict["L_1r_0_c1"]] == False and solution[dict["L_1r_0_c0"]] == False and             # 以下是输入差分模式判定
-           solution[dict["L_1r_1_c2"]] == False and solution[dict["L_1r_1_c1"]] == False and solution[dict["L_1r_1_c0"]] == False and
-           solution[dict["L_1r_2_c2"]] == False and solution[dict["L_1r_2_c1"]] == False and solution[dict["L_1r_2_c0"]] == False and
-           solution[dict["L_1r_3_c2"]] == True and solution[dict["L_1r_3_c1"]] == False and solution[dict["L_1r_3_c0"]] == True and
-           solution[dict["L_1r_4_c2"]] == False and solution[dict["L_1r_4_c1"]] == False and solution[dict["L_1r_4_c0"]] == False and
-            solution[dict["L_1r_5_c2"]] == False and solution[dict["L_1r_5_c1"]] == False and solution[dict["L_1r_5_c0"]] == False and
-            solution[dict["L_1r_6_c2"]] == False and solution[dict["L_1r_6_c1"]] == False and solution[dict["L_1r_6_c0"]] == False and
-            solution[dict["L_1r_7_c2"]] == True and solution[dict["L_1r_7_c1"]] == False and solution[dict["L_1r_7_c0"]] == True and
-            solution[dict["L_1r_8_c2"]] == False and solution[dict["L_1r_8_c1"]] == False and solution[dict["L_1r_8_c0"]] == False and
-            solution[dict["L_1r_9_c2"]] == False and solution[dict["L_1r_9_c1"]] == False and solution[dict["L_1r_9_c0"]] == False and
-            solution[dict["L_1r_10_c2"]] == False and solution[dict["L_1r_10_c1"]] == False and solution[dict["L_1r_10_c0"]] == False and
-            solution[dict["L_1r_11_c2"]] == False and solution[dict["L_1r_11_c1"]] == False and solution[dict["L_1r_11_c0"]] == False and
-            solution[dict["L_1r_12_c2"]] == False and solution[dict["L_1r_12_c1"]] == False and solution[dict["L_1r_12_c0"]] == False and
-            solution[dict["L_1r_13_c2"]] == False and solution[dict["L_1r_13_c1"]] == False and solution[dict["L_1r_13_c0"]] == False and
-            solution[dict["L_1r_14_c2"]] == False and solution[dict["L_1r_14_c1"]] == False and solution[dict["L_1r_14_c0"]] == False and
-            solution[dict["L_1r_15_c2"]] == True and solution[dict["L_1r_15_c1"]] == True and solution[dict["L_1r_15_c0"]] == False and
-            solution[dict["R_1r_0_c2"]] == False and solution[dict["R_1r_0_c1"]] == False and solution[dict["R_1r_0_c0"]] == False and
-            solution[dict["R_1r_1_c2"]] == False and solution[dict["R_1r_1_c1"]] == True and solution[dict["R_1r_1_c0"]] == True and
-            solution[dict["R_1r_2_c2"]] == False and solution[dict["R_1r_2_c1"]] == False and solution[dict["R_1r_2_c0"]] == False and
-            solution[dict["R_1r_3_c2"]] == False and solution[dict["R_1r_3_c1"]] == False and solution[dict["R_1r_3_c0"]] == False and
-            solution[dict["R_1r_4_c2"]] == False and solution[dict["R_1r_4_c1"]] == False and solution[dict["R_1r_4_c0"]] == False and
-            solution[dict["R_1r_5_c2"]] == True and solution[dict["R_1r_5_c1"]] == True and solution[dict["R_1r_5_c0"]] == False and
-            solution[dict["R_1r_6_c2"]] == False and solution[dict["R_1r_6_c1"]] == False and solution[dict["R_1r_6_c0"]] == False and
-            solution[dict["R_1r_7_c2"]] == False and solution[dict["R_1r_7_c1"]] == False and solution[dict["R_1r_7_c0"]] == False and
-            solution[dict["R_1r_8_c2"]] == False and solution[dict["R_1r_8_c1"]] == False and solution[dict["R_1r_8_c0"]] == False and
-            solution[dict["R_1r_9_c2"]] == False and solution[dict["R_1r_9_c1"]] == False and solution[dict["R_1r_9_c0"]] == False and
-            solution[dict["R_1r_10_c2"]] == False and solution[dict["R_1r_10_c1"]] == False and solution[dict["R_1r_10_c0"]] == False and
-            solution[dict["R_1r_11_c2"]] == False and solution[dict["R_1r_11_c1"]] == False and solution[dict["R_1r_11_c0"]] == False and
-            solution[dict["R_1r_12_c2"]] == False and solution[dict["R_1r_12_c1"]] == False and solution[dict["R_1r_12_c0"]] == False and
-            solution[dict["R_1r_13_c2"]] == True and solution[dict["R_1r_13_c1"]] == True and solution[dict["R_1r_13_c0"]] == False and
-            solution[dict["R_1r_14_c2"]] == False and solution[dict["R_1r_14_c1"]] == False and solution[dict["R_1r_14_c0"]] == False and
-            solution[dict["R_1r_15_c2"]] == True and solution[dict["R_1r_15_c1"]] == False and solution[dict["R_1r_15_c0"]] == True):
-            trail_count = trail_count + 1
-            print(trail_count)
+sat, solution = solver.solve()
+count = 0
 
-        # #所有得到的解都要加到约束里去，防止再次出现
-        for i in range(2, 23):
-            for j in range(0, 32):
-                ban_solution.append(-dict["L_" + str(i) + "r_" + str(j) + "_c2"] if solution[dict["L_" + str(i) + "r_" + str(j) + "_c2"]] == True else dict["L_" + str(i) + "r_" + str(j) + "_c2"])
-                ban_solution.append(-dict["L_" + str(i) + "r_" + str(j) + "_c1"] if solution[dict["L_" + str(i) + "r_" + str(j) + "_c1"]] == True else dict["L_" + str(i) + "r_" + str(j) + "_c1"])
-                ban_solution.append(-dict["L_" + str(i) + "r_" + str(j) + "_c0"] if solution[dict["L_" + str(i) + "r_" + str(j) + "_c0"]] == True else dict["L_" + str(i) + "r_" + str(j) + "_c0"])
-                ban_solution.append(-dict["R_" + str(i) + "r_" + str(j) + "_c2"] if solution[dict["R_" + str(i) + "r_" + str(j) + "_c2"]] == True else dict["R_" + str(i) + "r_" + str(j) + "_c2"])
-                ban_solution.append(-dict["R_" + str(i) + "r_" + str(j) + "_c1"] if solution[dict["R_" + str(i) + "r_" + str(j) + "_c1"]] == True else dict["R_" + str(i) + "r_" + str(j) + "_c1"])
-                ban_solution.append(-dict["R_" + str(i) + "r_" + str(j) + "_c0"] if solution[dict["R_" + str(i) + "r_" + str(j) + "_c0"]] == True else dict["R_" + str(i) + "r_" + str(j) + "_c0"])
-        solver.add_clause(ban_solution)
-print(trail_count)
+if sat == False:
+    print("不存在差分路径")
+else:
+    for i in range(1, 23):
+        for j in range(0, 32):
+            print("L_" + str(i) + "r_" + str(j) + "_c2" +":  %s"%solution[dict["L_" + str(i) + "r_" + str(j) + "_c2"]] +"  "
+                  "L_" + str(i) + "r_" + str(j) + "_c1" +":  %s"%solution[dict["L_" + str(i) + "r_" + str(j) + "_c1"]] +"  "
+                  "L_" + str(i) + "r_" + str(j) + "_c0" +":  %s"%solution[dict["L_" + str(i) + "r_" + str(j) + "_c0"]])
+            print("R_" + str(i) + "r_" + str(j) + "_c2" +":  %s"%solution[dict["R_" + str(i) + "r_" + str(j) + "_c2"]] +"  "
+                  "R_" + str(i) + "r_" + str(j) + "_c1" +":  %s"%solution[dict["R_" + str(i) + "r_" + str(j) + "_c1"]] +"  "
+                  "R_" + str(i) + "r_" + str(j) + "_c0" +":  %s"%solution[dict["R_" + str(i) + "r_" + str(j) + "_c0"]])
+            print("######################    AND运算   ########################")
+            print("SR1_" + str(i) + "r_" + str(j) + "_c2" +":  %s"%solution[dict["SR1_" + str(i) + "r_" + str(j) + "_c2"]] +"  "
+                  "SR1_" + str(i) + "r_" + str(j) + "_c1" +":  %s"%solution[dict["SR1_" + str(i) + "r_" + str(j) + "_c1"]] +"  "
+                  "SR1_" + str(i) + "r_" + str(j) + "_c0" +":  %s"%solution[dict["SR1_" + str(i) + "r_" + str(j) + "_c0"]])
+            print("SR8_" + str(i) + "r_" + str(j) + "_c2" +":  %s"%solution[dict["SR8_" + str(i) + "r_" + str(j) + "_c2"]] +"  "
+                  "SR8_" + str(i) + "r_" + str(j) + "_c1" +":  %s"%solution[dict["SR8_" + str(i) + "r_" + str(j) + "_c1"]] +"  "
+                  "SR8_" + str(i) + "r_" + str(j) + "_c0" +":  %s"%solution[dict["SR8_" + str(i) + "r_" + str(j) + "_c0"]])
+            print("aftAnd_" + str(i) + "r_" + str(j) + "_c2" +":  %s"%solution[dict["aftAnd_" + str(i) + "r_" + str(j) + "_c2"]] +"  "
+                  "aftAnd_" + str(i) + "r_" + str(j) + "_c1" +":  %s"%solution[dict["aftAnd_" + str(i) + "r_" + str(j) + "_c1"]] +"  "
+                  "aftAnd_" + str(i) + "r_" + str(j) + "_c0" +":  %s"%solution[dict["aftAnd_" + str(i) + "r_" + str(j) + "_c0"]])
+            print("ProaftAnd_" + str(i) + "r_" + str(j) + "_ph" +":  %s"%solution[dict["ProaftAnd_" + str(i) + "r_" + str(j) + "_ph"]] +"  "
+                  "ProaftAnd_" + str(i) + "r_" + str(j) + "_pl" +":  %s"%solution[dict["ProaftAnd_" + str(i) + "r_" + str(j) + "_pl"]] +"  "
+                  "ProaftAnd_" + str(i) + "r_" + str(j) + "_Pdep" +":  %s"%solution[dict["ProaftAnd_" + str(i) + "r_" + str(j) + "_Pdep"]])
+            if (solution[dict["ProaftAnd_" + str(i) + "r_" + str(j) + "_ph"]] == True):
+                count = count + 2
+            elif (solution[dict["ProaftAnd_" + str(i) + "r_" + str(j) + "_pl"]] == True):
+                count = count + 1
+            elif (solution[dict["ProaftAnd_" + str(i) + "r_" + str(j) + "_Pdep"]] == True):
+                count = count - 1
+            print("###########################################################")
+            print("#####################   XOR运算   #########################")
+            print("aftAnd_" + str(i) + "r_" + str(j) + "_c2" +":  %s"%solution[dict["aftAnd_" + str(i) + "r_" + str(j) + "_c2"]] +"  "
+                  "aftAnd_" + str(i) + "r_" + str(j) + "_c1" +":  %s"%solution[dict["aftAnd_" + str(i) + "r_" + str(j) + "_c1"]] +"  "
+                  "aftAnd_" + str(i) + "r_" + str(j) + "_c0" +":  %s"%solution[dict["aftAnd_" + str(i) + "r_" + str(j) + "_c0"]])
+            print("R_" + str(i) + "r_" + str(j) + "_c2" +":  %s"%solution[dict["R_" + str(i) + "r_" + str(j) + "_c2"]] +"  "
+                  "R_" + str(i) + "r_" + str(j) + "_c1" +":  %s"%solution[dict["R_" + str(i) + "r_" + str(j) + "_c1"]] +"  "
+                  "R_" + str(i) + "r_" + str(j) + "_c0" +":  %s"%solution[dict["R_" + str(i) + "r_" + str(j) + "_c0"]])
+            print("aftXOR1_" + str(i) + "r_" + str(j) + "_c2" +":  %s"%solution[dict["aftXOR1_" + str(i) + "r_" + str(j) + "_c2"]] +"  "
+                  "aftXOR1_" + str(i) + "r_" + str(j) + "_c1" +":  %s"%solution[dict["aftXOR1_" + str(i) + "r_" + str(j) + "_c1"]] +"  "
+                  "aftXOR1_" + str(i) + "r_" + str(j) + "_c0" +":  %s"%solution[dict["aftXOR1_" + str(i) + "r_" + str(j) + "_c0"]])
+            print("###########################################################")
+    for k in range(0, 32):
+        print("L_23r_" + str(k) + "_c2" +":  %s"%solution[dict["L_23r_" + str(k) + "_c2"]] +"  "
+              "L_23r_" + str(k) + "_c1" +":  %s"%solution[dict["L_23r_" + str(k) + "_c1"]] +"  "
+              "L_23r_" + str(k) + "_c0" +":  %s"%solution[dict["L_23r_" + str(k) + "_c0"]])
+    print(count)
+
+#获取程序结束时间
+end_time = process_time()
+runTime = end_time - start_time
+print("程序运行时间：", runTime, "秒")
