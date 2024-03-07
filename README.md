@@ -10,6 +10,8 @@ By adjusting the function's parameter 1 and parameter 2 it is possible to find m
 
 `gen_objectfuntion2_Constraint(9, 0)` //round， probability:pdep
 
+We use these two functions to achieve the SAT optimization objective ∑(2ph+pi-pdep) < w
+
 `pycryptosat.Solver(threads=1)` //adjusting the number of CPU cores used
 
 To run our codes preinstallation is SAT for solving constraint programming problems. You can run the code in the background on a linux system using the following command:
