@@ -97,7 +97,7 @@ The folder contains some specific CNF constraints used in the model, all feasibl
 
 `pattern_XOR.csv`: Feasible mixture differential propagation pattern propagated by XOR operation
 
-`pattern_XOR_CNF.txt`: CNF constraints for mixture differential propagation pattern propagated by XOR operation
+`pattern_XOR_CNF.txt`: CNF constraints for feasible mixture differential propagation pattern propagated by XOR operation
 
 `pattern_asscAnd.csv`: Feasible mixture differential propagation pattern considering dependence propagated by AND operation
 
