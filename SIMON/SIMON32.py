@@ -165,7 +165,7 @@ def gen_CopyCNF_Constraint(a, b):
         solver.add_clause([-dict[a[i] + str("_c2")], dict[b[i] + str("_c2")]])      #in2'+out2
 
 
-#定义概率变量ph的copy操作的CNF,概率变量的COPY操作和上面的copy操作的不同点在于，上面是三元，这个是一元的
+#定义概率变量ph的copy操作的CNF
 def gen_PhCopyCNF_Constraint(a, b):
     global number
     for i in range(0, 16):
@@ -182,22 +182,18 @@ def gen_PlCopyCNF_Constraint(a, b):
         solver.add_clause([dict[a[i] + str("_pl")], -dict[b[i]]])          #pl+pl_copy'
         solver.add_clause([-dict[a[i] + str("_pl")], dict[b[i]]])          #pl'+pl_copy
 
-# 定义一个函数，不向模型中添加新的变量，相同的变量，通过不同的名字进行调用
 def copy(a, b):
     for i in range(0, 16):
-        #要保证变量a已经在字典中已经定义了
         dict[b[i] + str("_c2")] = dict[a[i] + str("_c2")]
         dict[b[i] + str("_c1")] = dict[a[i] + str("_c1")]
         dict[b[i] + str("_c0")] = dict[a[i] + str("_c0")]
 
-#定义一个函数，不向模型中添加新的变量，相同的ph概率变量
 def phcopy(a, b):
     for i in range(0, 16):
         dict[b[i]] = dict[a[i] + str("_ph")]
         dict[b[i]] = dict[a[i] + str("_ph")]
         dict[b[i]] = dict[a[i] + str("_ph")]
 
-#定义一个函数，不向模型中添加新的变量，相同的pl变量
 def plcopy(a, b):
     for i in range(0, 16):
         dict[b[i]] = dict[a[i] + str("_pl")]
@@ -205,7 +201,7 @@ def plcopy(a, b):
         dict[b[i]] = dict[a[i] + str("_pl")]
 
 
-#定义bit的循环左移,将相应的bit的混合差分模式赋给循环左移后的bit,k表示循环左移位数，其实主要的功能是让不同的变量名在SAT中指向同一变量，这样约束就不会混乱
+#定义bit的循环左移
 def shift_left(a, b, k):
     if k == 1:
         for i in range(0, 16):
@@ -234,7 +230,6 @@ def insert_dict(a):
 
 #生成目标函数的约束
 def gen_objectfuntion_Constraint(r, w):
-    #r为轮次数, w为目标函数上界
     global number
     n = r*16*3          #
     dict["S_1_1"] = number; number = number + 1
@@ -255,7 +250,7 @@ def gen_objectfuntion_Constraint(r, w):
 
 def gen_objectfunction2_Constraint(r, c, vars_num):
     if c != 0:
-        list = []  # 用于存放指定变量的模型中位置数字
+        list = []  
         for i in range(1, r+1):
             for j in range(0, 16):
                 list.append(dict['ProaftAnd_'+str(i)+'r_'+str(j) + str("_Pdep")])
@@ -267,7 +262,6 @@ def gen_objectfunction2_Constraint(r, c, vars_num):
 def gen_rotation_Constraint(a, c, d):
     global number
     for i in range(0, 16):
-        # 我需要先在模型中给Pdep分配位置
         dict[d[i] + str("_Pdep")] = number; number = number + 1
     for i in range(0, 16):
         with open('dependent_withpro_Constraint.txt', 'r') as file:
@@ -277,7 +271,6 @@ def gen_rotation_Constraint(a, c, d):
                 line_split = file[m].split("+")
                 constraint = []
                 for j in range(0, len(line_split)):
-                    # 添加ax相关约束
                     if line_split[j] == "αx_c2":
                         constraint.append("dict[a[i] + str(\"_c2\")]")
                     if line_split[j] == "αx_c1":
@@ -290,7 +283,6 @@ def gen_rotation_Constraint(a, c, d):
                         constraint.append("-dict[a[i] + str(\"_c1\")]")
                     if line_split[j] == "αx_c0'":
                         constraint.append("-dict[a[i] + str(\"_c0\")]")
-                    # 添加ay相关约束
                     if line_split[j] == "αy_c2":
                         constraint.append("dict[a[(i+7)%16] + str(\"_c2\")]")
                     if line_split[j] == "αy_c1":
@@ -303,7 +295,6 @@ def gen_rotation_Constraint(a, c, d):
                         constraint.append("-dict[a[(i+7)%16] + str(\"_c1\")]")
                     if line_split[j] == "αy_c0'":
                         constraint.append("-dict[a[(i+7)%16] + str(\"_c0\")]")
-                    # 添加az相关约束
                     if line_split[j] == "αz_c2":
                         constraint.append("dict[a[(i+9)%16] + str(\"_c2\")]")
                     if line_split[j] == "αz_c1":
@@ -316,7 +307,6 @@ def gen_rotation_Constraint(a, c, d):
                         constraint.append("-dict[a[(i+9)%16] + str(\"_c1\")]")
                     if line_split[j] == "αz_c0'":
                         constraint.append("-dict[a[(i+9)%16] + str(\"_c0\")]")
-                    # 添加βxy相关约束
                     if line_split[j] == "βxy_c2":
                         constraint.append("dict[c[i] + str(\"_c2\")]")
                     if line_split[j] == "βxy_c1":
@@ -329,7 +319,6 @@ def gen_rotation_Constraint(a, c, d):
                         constraint.append("-dict[c[i] + str(\"_c1\")]")
                     if line_split[j] == "βxy_c0'":
                         constraint.append("-dict[c[i] + str(\"_c0\")]")
-                    # 添加βxz相关约束
                     if line_split[j] == "βxz_c2":
                         constraint.append("dict[c[(i+9)%16] + str(\"_c2\")]")
                     if line_split[j] == "βxz_c1":
@@ -342,7 +331,6 @@ def gen_rotation_Constraint(a, c, d):
                         constraint.append("-dict[c[(i+9)%16] + str(\"_c1\")]")
                     if line_split[j] == "βxz_c0'":
                         constraint.append("-dict[c[(i+9)%16] + str(\"_c0\")]")
-                    #添加dep相关约束,依赖特征导致的概率变量,这里对应的就是从0-31比特,每一位的输出比特的计算,所以i不用+25之类的
                     if line_split[j] == "Pdep":
                         constraint.append("dict[d[(i-1)%16] + str(\"_Pdep\")]")
                     if line_split[j] == "Pdep'":
@@ -363,34 +351,26 @@ def gen_XORCNF_input(a, b):
         dict[b[i] + str("_e2")] = number; number = number + 1
         dict[b[i] + str("_e1")] = number; number = number + 1
         dict[b[i] + str("_e0")] = number; number = number + 1
-        #先对L_1r_k_e2/e1/e0添加约束
-        #L_1r_i_e2的约束，主要是和c2和c1的关系
         solver.add_clause([-dict[a[i] + str("_c2")], -dict[a[i] + str("_c1")], -dict[a[i] + str("_e2")]])  # c2'+c1'+e2'
         solver.add_clause([dict[a[i] + str("_c2")], dict[a[i] + str("_c1")], -dict[a[i] + str("_e2")]])    # c2+c1+e2'
         solver.add_clause([dict[a[i] + str("_c2")], -dict[a[i] + str("_c1")], dict[a[i] + str("_e2")]])    # c2+c1'+e2
         solver.add_clause([-dict[a[i] + str("_c2")], dict[a[i] + str("_c1")], dict[a[i] + str("_e2")]])    # c2'+c1+e2
-        #L_1r_i_e1的约束，主要是和c2和c0的关系
         solver.add_clause([-dict[a[i] + str("_c2")], -dict[a[i] + str("_c0")], -dict[a[i] + str("_e1")]])  # c2'+c0'+e1'
         solver.add_clause([dict[a[i] + str("_c2")], dict[a[i] + str("_c0")], -dict[a[i] + str("_e1")]])  # c2+c0+e1'
         solver.add_clause([dict[a[i] + str("_c2")], -dict[a[i] + str("_c0")], dict[a[i] + str("_e1")]])  # c2+c0'+e1
         solver.add_clause([-dict[a[i] + str("_c2")], dict[a[i] + str("_c0")], dict[a[i] + str("_e1")]])  # c2'+c0+e1
-        # L_1r_i_e0的约束，主要是和c1和c0的关系
         solver.add_clause([-dict[a[i] + str("_c1")], -dict[a[i] + str("_c0")], -dict[a[i] + str("_e0")]])  # c1'+c0'+e0'
         solver.add_clause([dict[a[i] + str("_c1")], dict[a[i] + str("_c0")], -dict[a[i] + str("_e0")]])  # c1+c0+e0'
         solver.add_clause([dict[a[i] + str("_c1")], -dict[a[i] + str("_c0")], dict[a[i] + str("_e0")]])  # c1+c0'+e0
         solver.add_clause([-dict[a[i] + str("_c1")], dict[a[i] + str("_c0")], dict[a[i] + str("_e0")]])  # c1'+c0+e0
-        #对R_1r_k_e2/e1/e0添加约束
-        # R_1r_i_e2的约束，主要是和c2和c1的关系
         solver.add_clause([-dict[b[i] + str("_c2")], -dict[b[i] + str("_c1")], -dict[b[i] + str("_e2")]])  # c2'+c1'+e2'
         solver.add_clause([dict[b[i] + str("_c2")], dict[b[i] + str("_c1")], -dict[b[i] + str("_e2")]])  # c2+c1+e2'
         solver.add_clause([dict[b[i] + str("_c2")], -dict[b[i] + str("_c1")], dict[b[i] + str("_e2")]])  # c2+c1'+e2
         solver.add_clause([-dict[b[i] + str("_c2")], dict[b[i] + str("_c1")], dict[b[i] + str("_e2")]])  # c2'+c1+e2
-        #R_1r_i_e1的约束，主要是和c2和c0的关系
         solver.add_clause([-dict[b[i] + str("_c2")], -dict[b[i] + str("_c0")], -dict[b[i] + str("_e1")]])  # c2'+c0'+e1'
         solver.add_clause([dict[b[i] + str("_c2")], dict[b[i] + str("_c0")], -dict[b[i] + str("_e1")]])  # c2+c0+e1'
         solver.add_clause([dict[b[i] + str("_c2")], -dict[b[i] + str("_c0")], dict[b[i] + str("_e1")]])  # c2+c0'+e1
         solver.add_clause([-dict[b[i] + str("_c2")], dict[b[i] + str("_c0")], dict[b[i] + str("_e1")]])  # c2'+c0+e1
-        # R_1r_i_e0的约束，主要是和c1和c0的关系
         solver.add_clause([-dict[b[i] + str("_c1")], -dict[b[i] + str("_c0")], -dict[b[i] + str("_e0")]])  # c1'+c0'+e0'
         solver.add_clause([dict[b[i] + str("_c1")], dict[b[i] + str("_c0")], -dict[b[i] + str("_e0")]])  # c1+c0+e0'
         solver.add_clause([dict[b[i] + str("_c1")], -dict[b[i] + str("_c0")], dict[b[i] + str("_e0")]])  # c1+c0'+e0
@@ -401,9 +381,7 @@ start_time = process_time()
 
 number = 1
 p_number = 1
-#定义求解器
 solver = pycryptosat.Solver(threads=32)
-#主循环,这里的循环次数是想要找的混合差分区分器的轮数
 for i in range(1, 6):
     Lin = genVars_Round(i)[0:16]
     Rin = genVars_Round(i)[16:32]
@@ -423,34 +401,25 @@ for i in range(1, 6):
     PCopy3 = genVars_PCopy_Round()
     for k in range(1, 17):
         p_number = p_number + 1
-    #在生成约束前，先在字典中给Lin,Rin分配相应的位置,分轮次，第一轮不需要，后续轮次的Lin和Rin由前一轮生成
     if i == 1:
         insert_dict(Lin)
         insert_dict(Rin)
     else:
-        copy(genVars_Round(i - 1)[0:16], Rin)  # 这里实际上就是R(r)和Lin(r-1)实际上指向的是同一个变量，通过这样可以减少相应的变量数目
+        copy(genVars_Round(i - 1)[0:16], Rin)  
 
-    #在进行And操作前，先进行移位操作
     shift_left(Lin, SR1, 1)
     shift_left(Lin, SR8, 8)
     shift_left(Lin, SR2, 2)
-    #生成每一轮每一个bit对应的and约束
+
     gen_AndCNF_Constraint(SR1, SR8, aft_And, Pro_aftAnd)
-
-    #添加每一个bit对应三元组的依赖混合差分的约束
     gen_rotation_Constraint(Lin,  aft_And, Pro_aftAnd)
-
-    #生成概率变量ph的copy变量
     gen_PhCopyCNF_Constraint(Pro_aftAnd, PCopy1)
     phcopy(Pro_aftAnd, PCopy2)
-    #生成概率变量pl的copy变量
     plcopy(Pro_aftAnd, PCopy3)
-    #生成每一轮每一个bit对应的第一次XOR约束
     gen_XORCNF_Constraint(aft_And, Rin, aft_XOR)
-    #生成每一轮每一个bit对应的第二次XOR约束,用下一轮的Lin来作为XOR操作的输出
     gen_XORCNF_Constraint(aft_XOR, SR2, genVars_Round(i+1)[0:16])
 
-    # 添加输入混合差分模式的有关约束,先添加异或变量的有关约束，
+
     if i == 1:
         gen_XORCNF_input(Lin, Rin)
 
@@ -462,37 +431,37 @@ vars_num = solver.nb_vars()
 gen_objectfunction2_Constraint(5, 0, vars_num)
 
 
-#约束1，求和c^k_2>=1,k in [0,31],也就是L16+R16
+#约束1，求和c^k_2>=1,k 
 for i in range(0, 16):
     constraint = []
     constraint.append(dict["L_1r_" + str(i) + "_c2"])
     constraint.append(dict["R_1r_" + str(i) + "_c2"])
 solver.add_clause(constraint)
-#约束2，求和c^k_1>=1,k in [0,31],也就是L16+R16
+#约束2，求和c^k_1>=1,k 
 for i in range(0, 16):
     constraint = []
     constraint.append(dict["L_1r_" + str(i) + "_c1"])
     constraint.append(dict["R_1r_" + str(i) + "_c1"])
 solver.add_clause(constraint)
-#约束3，求和c^k_0>=1,k in [0,31],也就是L16+R16
+#约束3，求和c^k_0>=1
 for i in range(0, 16):
     constraint = []
     constraint.append(dict["L_1r_" + str(i) + "_c0"])
     constraint.append(dict["R_1r_" + str(i) + "_c0"])
 solver.add_clause(constraint)
-#约束4，求和e^k_2>=1,k in [0,31],也就是L16+R16
+#约束4，求和e^k_2>=1
 for i in range(0, 16):
     constraint = []
     constraint.append(dict["L_1r_" + str(i) + "_e2"])
     constraint.append(dict["R_1r_" + str(i) + "_e2"])
 solver.add_clause(constraint)
-#约束5，求和e^k_1>=1,k in [0,31],也就是L16+R16
+#约束5，求和e^k_1>=1
 for i in range(0, 16):
     constraint = []
     constraint.append(dict["L_1r_" + str(i) + "_e1"])
     constraint.append(dict["R_1r_" + str(i) + "_e1"])
 solver.add_clause(constraint)
-#约束6，求和e^k_0>=1,k in [0,31],也就是L16+R16
+#约束6，求和e^k_0>=1
 for i in range(0, 16):
     constraint = []
     constraint.append(dict["L_1r_" + str(i) + "_e0"])
@@ -557,7 +526,6 @@ else:
     print(count)
 
 
-#获取程序结束时间
 end_time = process_time()
 runTime = end_time - start_time
 print("程序运行时间：", runTime, "秒")
