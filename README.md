@@ -44,7 +44,7 @@ L_23r_30_c2:  False  L_23r_30_c1:  False  L_23r_30_c0:  False
 L_23r_31_c2:  False  L_23r_31_c1:  False  L_23r_31_c0:  False
 142
 ```
-
+L_23r_17_c2
 
 ## verify
 In folder verify, we verified the obtained mixture differential trails under multip keys.
