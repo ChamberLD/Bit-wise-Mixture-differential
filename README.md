@@ -44,7 +44,7 @@ L_23r_30_c2:  False  L_23r_30_c1:  False  L_23r_30_c0:  False
 L_23r_31_c2:  False  L_23r_31_c1:  False  L_23r_31_c0:  False
 142
 ```
-In output, `L_23r_17_c2` denotes the first bit of the mixture differential pattern 3-bit code of the 18th bit of the left input of round 23,so `L_23r_17_c2:  False  L_23r_17_c1:  True  L_23r_17_c0:  True` denotes that the mixture differential pattern of this bit is 011
+In output, `L_23r_17_c2` denotes the first bit of the mixture differential pattern 3-bit code of the 18th bit of the left input of round 23,so `L_23r_17_c2:  False  L_23r_17_c1:  True  L_23r_17_c0:  True` denotes that the mixture differential pattern of this bit is 011. `aftXOR aftAnd` denotes the bit after the  XOR/And operation.
 
 ## verify
 In folder verify, we verified the obtained mixture differential trails under multip keys.
